@@ -1,0 +1,23 @@
+{
+  "name": "udc-chatbot",
+  "version": "1.0.0",
+  "description": "UDC Chatbot",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/moatazattar/UDC-Chatbot.git"
+  },
+  "author": "Moataz El-Attar",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/moatazattar/UDC-Chatbot/issues"
+  },
+  "homepage": "https://github.com/moatazattar/UDC-Chatbot#readme",
+  "dependencies": {
+    "botbuilder": "^3.9.0",
+    "restify": "^5.0.1"
+  }
+}
