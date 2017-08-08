@@ -146,6 +146,17 @@ var program = {
                 "مواد البناء (بما في ذلك الخضراء / المتوافقة مع مفهوم الأستدامة)":{Description:"مواد البناء (بما في ذلك الخضراء / المتوافقة مع مفهوم الأستدامة)"}
             }
         },
+        UserType:{
+            en:{
+                "Looking For Property":{Description:"Looking For Property"},
+                "Current Resident":{Description:"Current Resident"}
+            },
+            ar:{
+                "تبحث عن عقار / منزل":{Description:"تبحث عن عقار / منزل"},
+                "ساكن":{Description:"ساكن"}
+            }
+        }
+        ,
         Operations: {
             en:{
                 "Assembly facility":{Description:"Assembly facility"},
@@ -425,7 +436,7 @@ var program = {
                 new builder.HeroCard(session)
                     .title("Manateq")
                     .text(txt)
-                    .images([builder.CardImage.create(session, "https://www.manateq.qa/Style%20Library/MTQ/Images/logo.png")])
+                    .images([builder.CardImage.create(session, "http://www.udcqatar.com/images/logo.png")])
                     .buttons([
                         builder.CardAction.imBack(session, "English", "English"),
                         builder.CardAction.imBack(session, "العربية", "العربية"),
@@ -439,10 +450,18 @@ var program = {
                session.conversationData.lang = locale;
                session.preferredLocale(locale,function(err){
                    if(!err){
-                      session.send("welcomeText");
-                      session.endDialog();
+                        session.send("welcomeText");
+                        var UserTypes = program.Helpers.GetOptions(program.Options.UserType,session.preferredLocale());
+                        builder.Prompts.choice(session, "getOperations", UserTypes,{listStyle: builder.ListStyle.button});
+                    //   session.endDialog();
                    }
-               });
+               },
+            function (session,results) {
+                session.conversationData.userType = results.response.entity;
+                session.send(JSON.stringify(results));
+                 session.endDialog();
+            }
+            );
                
             }
         ])
