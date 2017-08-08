@@ -56,6 +56,9 @@ var intents = new builder.IntentDialog({ recognizers: [
         session.endDialog();
     }
 })
+.matches('None',(session, args) => {
+    session.send("cannotUnderstand");
+})
 
 var program = {
     Constants:{
