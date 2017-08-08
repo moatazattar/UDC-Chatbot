@@ -25,6 +25,12 @@ var bot = new builder.UniversalBot(connector,{
 });
 
 //Recognizers
+/**
+ *session.conversationData.name
+ session.conversationData.Email
+ session.conversationData.IsResident
+
+ */
 
 var EnglishRecognizers = {
         EnSupportRecognizer : new builder.RegExpRecognizer( "EnSupport", /(^(?=.*(not working|fix|i want to fix|fix)))/i),
@@ -58,7 +64,7 @@ var intents = new builder.IntentDialog({ recognizers: [
     }
 })
 .matches('EnGreetings',(session, args) => {
-    session.send("cannotUnderstand");
+     
 })
 .matches('None',(session, args) => {
     session.send("cannotUnderstand");
@@ -493,6 +499,18 @@ var program = {
 }
 
 program.Init();
+
+
+bot.on('conversationUpdate', function (activity) {  
+    if (activity.membersAdded) {
+        activity.membersAdded.forEach((identity) => {
+            if (identity.id === activity.address.bot.id) {
+                   bot.beginDialog(activity.address, 'setLanguageWithPic');
+             }
+         });
+    }
+ });
+
 
 // // Receive messages from the user and respond by echoing each message back (prefixed with 'You said:')
 // var bot = new builder.UniversalBot(connector, function (session) {
