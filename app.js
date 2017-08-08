@@ -27,19 +27,20 @@ var bot = new builder.UniversalBot(connector,{
 //Recognizers
 
 var EnglishRecognizers = {
-        SupportRecognizer : new builder.RegExpRecognizer( "EN-Support", /(^(?=.*(not working|fix|i want to fix|fix)))/i),
-        //investRecognizer : new builder.RegExpRecognizer( "WantAR", /(مستثمر|إستثمار|أريد أن استثمر)/i),
+        EnSupportRecognizer : new builder.RegExpRecognizer( "EnSupport", /(^(?=.*(not working|fix|i want to fix|fix)))/i),
+        EnGreetingsRecognizer : new builder.RegExpRecognizer( "EnGreetings", /(Hi|hello|good morning|good evening|good afternoon|)/i),
         // greetingRecognizer : new builder.RegExpRecognizer( "Greeting", /(السلام عليكم|صباح الخير|مساء الخير|مرحباً)/i),
         // arabicRecognizer : new builder.RegExpRecognizer( "Arabic", /(العربية)/i), 
         // englishRecognizer : new builder.RegExpRecognizer( "English", /(English)/i)
     }
 
 var intents = new builder.IntentDialog({ recognizers: [
-    EnglishRecognizers.SupportRecognizer,
+    EnglishRecognizers.EnSupportRecognizer,
+    EnglishRecognizers.EnGreetingsRecognizer,
     ] 
 })
 
-.matches("EN-Support",(session,args)=>{
+.matches("EnSupport",(session,args)=>{
     var isSupport = true;
     if(isSupport){
         session.send("Your first intent saids: %s", JSON.stringify(args));
@@ -55,6 +56,9 @@ var intents = new builder.IntentDialog({ recognizers: [
         session.send("cannotUnderstand");;
         session.endDialog();
     }
+})
+.matches('EnGreetings',(session, args) => {
+    session.send("cannotUnderstand");
 })
 .matches('None',(session, args) => {
     session.send("cannotUnderstand");
