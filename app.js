@@ -543,8 +543,6 @@ var program = {
                 }).catch(function (error) {
                     //session.send("Item Not Added");
                 })
-
-
                 session.endDialog();
             }
         ]);
@@ -621,14 +619,15 @@ var program = {
                 var re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
                 if(re.test(results.response))
                     {
-                        dynamicsWebApi.retrieveAll("leads", ["emailaddress1","firstname"], "statecode eq 0").then(function (response) {
+                        dynamicsWebApi.retrieveAll("contacts", ["emailaddress1","firstname"], "statecode eq 0").then(function (response) {
                             var records = response.value;
+                            // session.send(JSON.stringify(response.value));
                             // session.send('%s' , JSON.stringify(records).toLowerCase().indexOf(results.response.toLowerCase()))
                             if(JSON.stringify(records).toLowerCase().indexOf(results.response.toLowerCase()) > 0 )
                             {
                                 for (var i = 0; i < records.length; i++) {
                                     var element = records[i];
-                                    if (element.emailaddress1.toLowerCase() == results.response.toLowerCase()) {
+                                    if (element.emailaddress1 != null && element.emailaddress1.toLowerCase() == results.response.toLowerCase()) {
                                         session.CRMResult = true;
                                         session.conversationData.firstName = element.firstname;
                                         break;
@@ -673,21 +672,33 @@ var program = {
             },
             function(session,results){ //get how you heard about us
                 session.dialogData.mobile = results.response;
-                var lead = {
-                    subject: "Not Registered Resident Chatbot Record",
-                    firstname: session.conversationData.firstName,
-                    lastname: session.conversationData.lastName,
-                    mobilephone: session.dialogData.mobile,
-                    emailaddress1: session.dialogData.email
-                };
-                //call dynamicsWebApi.create function 
-                dynamicsWebApi.create(lead, "leads").then(function (id) {
-                    //session.send("Item Added");
-                }).catch(function (error) {
-                    //session.send("Item Not Added");
-                })
+                dynamicsWebApi.retrieveAll("leads", ["emailaddress1"], "statecode eq 0").then(function (response) {
+                    var records = response.value;
+                    // session.send(JSON.stringify(records).toLowerCase().indexOf(session.dialogData.email.toLowerCase()));
+                    if(JSON.stringify(records).toLowerCase().indexOf(session.dialogData.email.toLowerCase()) < 0 )
+                    {
+                        var lead = {
+                                subject: "Not Registered Resident Chatbot Record",
+                                firstname: session.conversationData.firstName,
+                                lastname: session.conversationData.lastName,
+                                mobilephone: session.dialogData.mobile,
+                                emailaddress1: session.dialogData.email
+                            };
+                            //call dynamicsWebApi.create function 
+                            dynamicsWebApi.create(lead, "leads").then(function (id) {
+                                session.send("Item Added");
+                            }).catch(function (error) {
+                                session.send("Item Not Added");
+                            })
 
-                session.endDialogWithResult(results);
+                        session.endDialogWithResult(results);
+                    }
+                    else
+                        session.endDialogWithResult(results);
+                })
+                .catch(function (error){
+                    session.send("");
+                });
             }
         ]);
         bot.dialog("getMobile",[
