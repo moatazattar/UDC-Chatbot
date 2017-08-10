@@ -1,9 +1,34 @@
 var restify = require('restify');
 var builder = require('botbuilder');
 var https = require('https');
+var nodemailer = require('nodemailer');
+var DynamicsWebApi = require('dynamics-web-api');
+var AuthenticationContext = require('adal-node').AuthenticationContext;
+var dynamicsWebApi = new DynamicsWebApi({ 
+    webApiUrl: 'https://advancyaqatar0.crm4.dynamics.com/api/data/v8.2/',
+    onTokenRefresh: acquireToken
+});
 
 Q = require('q');
 
+
+var authorityUrl = 'https://login.microsoftonline.com/d022f938-d149-41eb-89fc-2792c9c82ee2/oauth2/token';
+var resource = 'https://advancyaqatar0.crm4.dynamics.com';
+var clientId = 'a5fca245-2eb5-469b-9a36-445203c29a9b';
+var username = 'moatazattar@advancyaQatar.onmicrosoft.com';
+var password = '1!!xuloloL';
+var adalContext = new AuthenticationContext(authorityUrl);
+function acquireToken(dynamicsWebApiCallback){
+    function adalCallback(error, token) {
+        if (!error){
+            dynamicsWebApiCallback(token);
+        }
+        else{
+           console.log(error.stack);
+        }
+    }
+    adalContext.acquireTokenWithUsernamePassword(resource, username, password, clientId, adalCallback);
+}
 // Setup Restify Server
 var server = restify.createServer();
 server.listen(process.env.port || process.env.PORT || 3978, function () {
@@ -77,12 +102,12 @@ var program = {
         questionBeforeGenericHelp : 3,
         EmailTemplate : {
             Content:{
-                en:"Dear {{user}} <br/> Thanks alot for your interest in investing in Manateq, our team will study your inquiry and will get back to you as soon as possible <br/><table border=1><tr><td>Mobile</td><td>{{mobile}}</td></tr><tr><td>Zone</td><td>{{zone}}</td></tr><tr><td>Sector</td><td>{{sector}}</td></tr><tr><td>Operation</td><td>{{operation}}</td></tr><tr><td>Heard</td><td>{{heard}}</td></tr><tr><td>Comment</td><td>{{comment}}</td></tr></table><br/>Regards,<br/>Manateq Team",
-                ar:"<div style='direction:rtl'> عزيزي {{user}} <br/> شكراً على اهتمامك بالاستثمار في مناطق، سوف نقوم بدراسة طلبك والرد عليك بأقرب فرصة ممكنة <br/><br/><table border=1><tr><td>رقم جوالك</td><td>{{mobile}}</td></tr><tr><td>اهتماماتك</td><td>{{zone}}</td></tr><tr><td> قطاع</td><td>{{sector}}</td></tr><tr><td>نوع العمل</td><td>{{operation}}</td></tr><tr><td>كيف سمعت عن شركة مناطق؟</td><td>{{heard}}</td></tr><tr><td>الاستعلام عنه</td><td>{{comment}}</td></tr></table><br/> مع تحيات فريق عمل مناطق</div>"
+                en:"Dear {{user}} <br/> Thanks alot for your interest in UDC, our team will study your inquiry and will get back to you as soon as possible <br/><table border=1><tr><td>Mobile</td><td>{{mobile}}</td></tr><tr><td>property</td><td>{{property}}</td></tr><tr><td>Heard</td><td>{{heard}}</td></tr><tr><td>Comment</td><td>{{comment}}</td></tr></table><br/>Regards,<br/>UDC Team",
+                ar:"<div style='direction:rtl'> عزيزي {{user}} <br/> شكراً على اهتمامك بعقارات الشركه المتحده، سوف نقوم بدراسة طلبك والرد عليك بأقرب فرصة ممكنة <br/><br/><table border=1><tr><td>رقم جوالك</td><td>{{mobile}}</td></tr><tr><td>اهتماماتك</td><td>{{property}}</td></tr><tr><td>كيف سمعت عن شركة مناطق؟</td><td>{{heard}}</td></tr><tr><td>الاستعلام عنه</td><td>{{comment}}</td></tr></table><br/> مع تحيات فريق عمل الشركه المتحده</div>"
             },
             Subject:{
-                en:"Thanks from Manateq",
-                ar:"شكراً من مناطق"
+                en:"Thanks from UDC",
+                ar:"شكراً من الشركه المتحده"
             }
         },
         YesNo : {
@@ -155,6 +180,28 @@ var program = {
             ar:{
                 "تبحث عن عقار / منزل":{Description:"تبحث عن عقار / منزل"},
                 "ساكن":{Description:"ساكن"}
+            }
+        },
+        AlreadyUser:{
+            en:{
+               "Yes":{Description:"Yes"},
+                "No":{Description:"No"},
+            },
+            ar:{
+               "نعم":{Description:"نعم"},
+                "لا":{Description:"لا"},
+            }
+        },
+        PropertyInterest:{
+            en:{
+               "Yes":{Description:"Yes"},
+                "No":{Description:"No"},
+                "Show All":{Description:"Show All"}
+            },
+            ar:{
+                "نعم":{Description:"نعم"},
+                "لا":{Description:"لا"},
+                "إظهر الكل":{Description:"إظهر الكل"}
             }
         },
         Services:{
@@ -242,35 +289,26 @@ var program = {
                     Title:"Available Properties", 
                     Description:"please select one of the below",
                     Items:{
-                        "FAHAD RASHID AL KAABI": {
+                        "Viva Bahryia Tower 29": {
                             Cards : true,
-                            Image: "https://www.manateq.qa/Admin/PublishingImages/MTQICONS/Fahad%20Al%20Kaabi_Chief%20Executive%20Officer.JPG",
-                            Title:"FAHAD RASHID AL KAABI",
-                            Description:"The Ex-CEO of QPM joined Manateq in 2013 bringing with him over 17 years of wide-ranging work experience in the areas of engineering, project management and top level administration. Prior to being appointed CEO of QPM, he has also had relevant experience in formulating public policy as Manager of the Conservation and Energy Efficiency Department of Qatar General Electricity and Water Corporation (KAHRAMAA). During such time, Mr. Al-Kaabi formulated conservation policies, strategies and rules in conformity with conservation laws, as well as promoted educational awareness for energy conservation in Qatar, ensuring compliance with international and GCC energy conservation guidelines.​Demonstrating a commitment to ongoing learning and development in the workplace, Mr. Al-Kaabi received his Bachelor's degree in Industrial Engineering and another Bachelor's degree in Business Management, both from the University of Miami in the USA. He then received his Master's degree in Project Management from the University of Houston in 2007.In his current capacity as CEO of Manateq, Mr. Al-Kaabi vows to push forward the company's vision of supporting Qatar's economic diversification and competitiveness strategy as contained in Qatar's National Vision 2030 framework.​​​"
-                        },
-                        "MOHAMMED AL MALKI": {
+                            Image: "http://www.udcqatar.com/ContentFiles/74Image.jpg",
+                            Title:"Viva Bahryia Tower 29",
+                            Description:"Start Date: December 2007 Delivery Date: February 2010 Project Type: Residential ​​​​",
+                            Pref: "Viva Bahriya precinct is of true beachfront condominium living, perfect for families and all who seek a more relaxed lifestyle. Architecturally themed to echo the very best of the Maghreb – with Moroccan-styled townhouses and apartments, Viva Bahriya is lapped by a warm, inviting sea and its own stretch of pristine beach, it is a haven for water sports enthusiasts. Offering tenants a vast range of options for a “greener” lifestyle, Viva Bahriya is strategically located within a lush and reserved neighborhood of the Pearl-Qatar.Various studios and 1 to 3 bedroom apartments and luxury penthouses are located in elegant tower residences. Townhouses and low rise blocks offer innovative design and features with Marina and beach views."
+                        },  
+                        "Qanat Quartier": {
                             Cards : true,
-                            Image: "https://www.manateq.qa/Admin/PublishingImages/MTQICONS/Mohammed%20Al%20Malki.JPG",
-                            Title:"MOHAMMED AL MALKI",
-                            Description:"Mohammed Hassan Al Malki is the Chief Planning and Business Development at Economic Zone Company – Manateq since 2014, with expertise in developing the company's strategy and business plan, managing marketing activities and communicating with investors and customers. B​efore joining Manateq he worked at Qatar General Electricity & Water Corporation KAHRAMAA for more than ten years straight, acquiring an extensive set of skills before closing an exceptionally prolific time at the company as Head of Strategic Planning Section. Mohammed Hassan Al Malki holds an MBA from University of Leeds and a Bachelor's degree in Mechanical Engineering from University of Qatar. He has also successfully attended various workshops and training courses to develop extra abilities, from 'Balance Scorecard' to 'The Seven Innovation Tools' among others, facts proven by his many achievements throughout his career.​​​"
-                        },
-                        "HAMAD AL MARRI": {
+                            Image: "http://www.udcqatar.com/ContentFiles/73Image.jpg",
+                            Title:"Qanat Quartier",
+                            Description:"Start Date: March 2006 Delivery Date: June 2012 Project Type: Retail,Residential ​​​​",
+                            Pref: "With its colorful Venetian character, Qanat Quartier is carefully planned around intricate canals and pedestrian-friendly squares and plazas. Each waterway is spanned by stylish bridges which further evoke the soul of Italian romantic living. Edged by sandy bays embracing the Arabian Gulf, Qanat Quartier is an intriguingly complex area in which a true Riviera lifestyle can be enjoyed. Proximity to water is a feature of all townhouses, with many enjoying direct views over the beach and some even featuring roof gardens.Boutique-style shopping adds to the intimate village feel and provides a heart for the community that thrives there. With a significant percentage of retail space signed, the district is anticipated to be extremely popular with its residents as well as visitors as it evolves into a unique retail locale."
+                        },  
+                        "The Pearl Towers": {
                             Cards : true,
-                            Image: "https://www.manateq.qa/Admin/PublishingImages/MTQICONS/Hamad%20Al%20Marri_Chief%20Projects%20Officer.JPG",
-                            Title:"HAMAD AL MARRI",
-                            Description:"Chief Projects Officer at Economic Zone Company – Manateq, Hamad J. Al-Marri has a wide range of vital responsibilities; developing and leading the implementation of Major Projects, master plan, design and construction strategies and business plan across all zones; coordinating with Business Development to meet the company strategies; and overseeing project control activities, among other duties.Starting his professional life in 1997, Al-Marri worked at companies all over the world. His vast experience at Snamprogetti (Milan), Hyundai (Seoul), Overseas Bechtel Incorporated and Qatar Petroleum brought him to Manateq in 2013.Al-Marri holds a Bachelor's degree in Mechanical Engineering and an extensive academic background, with more than 30 training programs and courses successfully attended. He had been a member of various Tender Committees such as Maersk Oil Qatar, QP-Shell Petrochemical Project, Dolphin Energy and Total Qatar, and Vice Chairman at CNG Utilization for Local Transportation. Al Marri participated in may local and international conferences, summits and events.​​​"
-                        },
-                        "HAMAD AL NAIMI": {
-                            Cards : true,
-                            Image: "https://www.manateq.qa/Admin/PublishingImages/MTQICONS/Hamad%20Al%20Naimi_Chief%20Operations%20officer.JPG",
-                            Title:"HAMAD AL NAIMI",
-                            Description:"Hamad Al-Naimi has been the Chief Operations Officer of the Economic Zones Company (Manateq) since January 2015 where he is responsible for leading the development and implementation of strategic framework and operating policies for zones. Mr. Al-Naimi is a seasoned operations executive with over 15 years of progressive work experience across diverse organizations in Qatar. Mr. Al-Nami's previous roles in Manateq include Project Director, Al-Karana Zone, and Project Controls & Contracts Director where he was responsible for developing and institutionalizing the project support and corporate procurement framework, policies and procedures.Mr. Al-Naimi's roles, prior to joining Manateq, include General Manager of Engineering & Construction, United Development Company (UDC), where he led the portfolio of mega projects from conception to delivery; later, he was appointed as the Board of Director for one of UDC's subsidiaries; Head of Technical, RasGas Company, where he responsible for managing shared assets with QatarGas and other QP subsidiaries; and lastly Project Manager, RasGas Company and Ashghal, where he was responsible for managing and delivering upon multi-million dollar infrastructure and related projectsMr. Al-Naimi is a Civil Engineering by profession and an active member of the Project Management Institute (PMI), USA -Arabian Chapter. Mr. Al-Naimi is an 'Executive Leadership Program' graduate, from Qatar Leadership Center, and a member of the 'Future CEO Program' in Qatar"
-                        },
-                        "MOHAMMED AL EMADI": {
-                            Cards : true,
-                            Image: "https://www.manateq.qa/PublishingImages/Al%20Emadi%203.jpg",
-                            Title:"MOHAMMED AL EMADI",
-                            Description:"​Chief Administration and Finance Officer at Economic Zone Company – Manateq, Mohammad Lutfalla Al Emadi is currently managing four departments – Human Resources, Finance, Information Technology and General services at Manateq. He has twenty years of extensive and diversified experience in banking, logistics services, real estate development and investment.​Before joining Manateq, Al Emadi held senior positions at Industrial Development Bank, Gulf Warehousing Company, Barwa International Real Estate Investment, and Aspire Katara for Investment.He holds a Bachelor's Degree in Industrial Engineering from Texas A&M – USA and he has also successfully attended various workshops and training courses in leaderships, Management and Finance.​​​"
+                            Image: "http://www.udcqatar.com/ContentFiles/75Image.jpg",
+                            Title:"Qanat Quartier",
+                            Description:"Start Date: February 2013 Delivery Date: October 2016 Project Type: Commercial​​​​",
+                            Pref: "Standing as the tallest architecture on the Pearl Island, the Pearl AQ-01 and AQ-02 towers are identical structures situated at the entrance of The Pearl-Qatar and developed primarily to accommodate high quality commercial office space, making it the location of choice for many discerning businesses. Within its cosmopolitan setting, The Pearl Towers' design language is fundamentally a modern-day interpretation of time-honored styles and themes, and each 42-storey tower offers amenities designed to provide the best possible working environment within first class facilities.As a high quality state-of-the-art commercial office development, the Pearl Towers are seen as a major step forward for the Island and a great enterprise aimed at clients looking for office space in an inspiring location. Standing at approximately 201 meters each on opposite sides, the two beacon-like office towers flank the main access road of the Pearl-Qatar, and serve as a defining feature to the whole Pearl development."
                         }
                     }   
                 }
@@ -436,8 +474,11 @@ var program = {
                 session.endDialog("greetingAsk",name);
             }
         ]);
-        bot.dialog("invest",[
+        bot.dialog("CollectInformation",[
             function(session,args){
+                // session.send(JSON.stringify(args));
+                // session.dialogData.property = args;
+                session.send('%s',session.conversationData.InterestedProperty)
                 session.beginDialog("getname");    
             },
             function(session,results){ //get email
@@ -446,27 +487,26 @@ var program = {
             },
             function(session,results){ //get mobile
                 session.dialogData.email = results.response;
-                //builder.Prompts.text(session,"getMobileNumber");
                 session.beginDialog("getMobile");
             },
-            function(session,results){ //get zone
-                session.dialogData.mobile = results.response;
-                var zones = program.Helpers.GetOptions(program.Options.Zones,session.preferredLocale());
-                builder.Prompts.choice(session, "getZones", zones,{listStyle: builder.ListStyle.button});
-            },
-            function(session,results){ //get sector
-                session.dialogData.zone = results.response.entity;
-                var sectors = program.Helpers.GetOptions(program.Options.Sectors,session.preferredLocale());
-                builder.Prompts.choice(session, "getSectors", sectors,{listStyle: builder.ListStyle.button});
-            },
-            function(session,results){ //get operation
-                session.dialogData.sector = results.response.entity;
-                var operations = program.Helpers.GetOptions(program.Options.Operations,session.preferredLocale());
-                //نوع العمل الذي ترغب بتأسيسة
-                builder.Prompts.choice(session, "getOperations", operations,{listStyle: builder.ListStyle.button});
-            },
+            // function(session,results){ //get zone
+            //     session.dialogData.mobile = results.response;
+            //     var zones = program.Helpers.GetOptions(program.Options.Zones,session.preferredLocale());
+            //     builder.Prompts.choice(session, "getZones", zones,{listStyle: builder.ListStyle.button});
+            // },
+            // function(session,results){ //get sector
+            //     session.dialogData.zone = results.response.entity;
+            //     var sectors = program.Helpers.GetOptions(program.Options.Sectors,session.preferredLocale());
+            //     builder.Prompts.choice(session, "getSectors", sectors,{listStyle: builder.ListStyle.button});
+            // },
+            // function(session,results){ //get operation
+            //     session.dialogData.sector = results.response.entity;
+            //     var operations = program.Helpers.GetOptions(program.Options.Operations,session.preferredLocale());
+            //     //نوع العمل الذي ترغب بتأسيسة
+            //     builder.Prompts.choice(session, "getOperations", operations,{listStyle: builder.ListStyle.button});
+            // },
             function(session,results){ //get how you heard about us
-                session.dialogData.operation = results.response.entity;
+                session.dialogData.mobile = results.response;
                 builder.Prompts.text(session, "getHowYouHeard");
             },
             function(session,results){ //get comment
@@ -481,17 +521,34 @@ var program = {
                     email:session.dialogData.email,
                     user:session.dialogData.name,
                     mobile:session.dialogData.mobile,
-                    zone:session.dialogData.zone,
-                    sector:session.dialogData.sector,
-                    operation:session.dialogData.operation,
+                    property:session.conversationData.InterestedProperty,
+                    // sector:session.dialogData.sector,
+                    // operation:session.dialogData.operation,
                     heard:session.dialogData.heard,
                     comment:session.dialogData.comment
                 },session.preferredLocale());
                 session.send("thanksInquiry",session.dialogData.email);
                 session.conversationData.applicationSubmitted = true;
+
+                var lead = {
+                    subject: "Intersted in "+ session.conversationData.InterestedProperty,
+                    firstname: session.dialogData.name,
+                    // lastname: session.conversationData.lastName,
+                    mobilephone: session.dialogData.mobile,
+                    emailaddress1: session.dialogData.email
+                };
+                //call dynamicsWebApi.create function 
+                dynamicsWebApi.create(lead, "leads").then(function (id) {
+                    session.send("Your data had been saved");
+                }).catch(function (error) {
+                    //session.send("Item Not Added");
+                })
+
+
                 session.endDialog();
             }
         ]);
+
         bot.dialog("getname",[
             function(session){ //get girst name
                 if(session.conversationData.name == null){
@@ -503,6 +560,34 @@ var program = {
             },
             function(session,results){ 
                 session.conversationData.name = results.response;
+                session.endDialog();
+            }
+        ]);
+        bot.dialog("getFirstname",[
+            function(session){ //get fisrt name
+                if(session.conversationData.firstName == null){
+                    builder.Prompts.text(session,"firstOnlyNamePlease");
+                }
+                else{
+                    session.endDialog();
+                }
+            },
+            function(session,results){ 
+                session.conversationData.firstName = results.response;
+                session.endDialog();
+            }
+        ]);
+        bot.dialog("getLastname",[
+            function(session){ //get last name
+                if(session.conversationData.lastName == null){
+                    builder.Prompts.text(session,"LastOnlyNamePlease");
+                }
+                else{
+                    session.endDialog();
+                }
+            },
+            function(session,results){ 
+                session.conversationData.lastName = results.response;
                 session.endDialog();
             }
         ]);
@@ -521,6 +606,88 @@ var program = {
                     session.endDialogWithResult(results);
                 else
                     session.replaceDialog('getEmail', { reprompt: true });
+            }
+        ]);
+        bot.dialog("getEmailCRM",[
+            function(session,args){
+                if (args && args.reprompt) {
+                    builder.Prompts.text(session, "validEmail");
+                } else {
+                builder.Prompts.text(session, "enterEmail");
+                }
+            },
+            function(session,results)
+            {
+                var re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+                if(re.test(results.response))
+                    {
+                        dynamicsWebApi.retrieveAll("leads", ["emailaddress1","firstname"], "statecode eq 0").then(function (response) {
+                            var records = response.value;
+                            // session.send('%s' , JSON.stringify(records).toLowerCase().indexOf(results.response.toLowerCase()))
+                            if(JSON.stringify(records).toLowerCase().indexOf(results.response.toLowerCase()) > 0 )
+                            {
+                                for (var i = 0; i < records.length; i++) {
+                                    var element = records[i];
+                                    if (element.emailaddress1.toLowerCase() == results.response.toLowerCase()) {
+                                        session.CRMResult = true;
+                                        session.conversationData.firstName = element.firstname;
+                                        break;
+                                    }
+                                }
+                                session.endDialogWithResult(results);
+                            }
+                            else
+                            {
+                                session.dialogData.email = results.response;
+                                session.beginDialog("CollectDataCRM",{Email:results.response}); 
+                            }
+                        })
+                        .catch(function (error){
+                            session.send("");
+                        });
+
+                        /*if("CRM" == "CRM")
+                            session.endDialogWithResult(results);
+                        else
+                        {
+                            session.dialogData.email = results.response;
+                            session.beginDialog("CollectDataCRM"); 
+                        }*/
+                    }
+                else
+                    session.replaceDialog('getEmail', { reprompt: true });
+            }
+        ]);
+        bot.dialog("CollectDataCRM",[
+            function(session,args){
+                session.dialogData.email = args.Email;
+                session.beginDialog("getFirstname");    
+            },
+            function(session,results){ //get fisrt name
+                session.dialogData.firstName = results.response;
+                session.beginDialog("getLastname");
+            },
+            function(session,results){ //get last name
+                session.dialogData.lastName = results.response;
+                session.beginDialog("getMobile");
+            },
+            function(session,results){ //get how you heard about us
+                session.dialogData.mobile = results.response;
+                var lead = {
+                    subject: "Not Registered Resident Chatbot Record",
+                    firstname: session.conversationData.firstName,
+                    lastname: session.conversationData.lastName,
+                    mobilephone: session.dialogData.mobile,
+                    emailaddress1: session.dialogData.email
+                };
+                //call dynamicsWebApi.create function 
+                dynamicsWebApi.create(lead, "leads").then(function (id) {
+                    //session.send("Item Added");
+                }).catch(function (error) {
+                    //session.send("Item Not Added");
+                })
+
+                session.endDialogWithResult(results);
             }
         ]);
         bot.dialog("getMobile",[
@@ -628,7 +795,7 @@ var program = {
                         attachments.push(
                              new builder.HeroCard(session)
                             .title(result.Items[i].Title)
-                            .text(result.Items[i].Description.substring(0,150)+"...")
+                            .text(result.Items[i].Description.substring(0,250)+"...")
                             .images([builder.CardImage.create(session, result.Items[i].Image)])
                             .buttons([
                                 builder.CardAction.imBack(session, result.Items[i].Title, txt)
@@ -638,32 +805,50 @@ var program = {
                     msg.attachments(attachments);
                     //session.send(msg);
                     builder.Prompts.choice(session, msg, result.Items,{listStyle: builder.ListStyle.button});
-                    //builder.Prompts.choice(session, msg, result.Items);
                 }
             },
             function(session,results){
                 var item = session.dialogData.item.Items[results.response.entity];
-                session.send(JSON.stringify(results));
                 if(item.Cards)
                 {
                     var msg = new builder.Message(session);
+                    var PropertyInterests = program.Helpers.GetOptions(program.Options.PropertyInterest,session.preferredLocale());
+                    session.conversationData.InterestedProperty = item.Title;
+                    // session.send(JSON.stringify(PropertyInterests))
                     msg.attachmentLayout(builder.AttachmentLayout.carousel);
                     msg.attachments([
                         new builder.HeroCard(session)
                         .title(item.Title)
-                        .text(item.Description)
+                        .text(item.Pref)
                         .images([builder.CardImage.create(session, item.Image)])
-                        //.buttons([
-                            //builder.CardAction.imBack(session, item.Title, "Buy")
-                        //])
+                        .buttons([
+                            builder.CardAction.imBack(session,Object.keys(PropertyInterests)[0], Object.keys(PropertyInterests)[0]),
+                            builder.CardAction.imBack(session,Object.keys(PropertyInterests)[1],Object.keys(PropertyInterests)[1]),
+                            builder.CardAction.imBack(session, Object.keys(PropertyInterests)[2],Object.keys(PropertyInterests)[2])
+                        ])
                     ])
-                    session.send(msg).endDialog();
+
+                    // session.send(msg);//.endDialog();
+                    builder.Prompts.choice(session, msg, PropertyInterests, {listStyle: builder.ListStyle.button});
                 }
                 else{
                    session.send(item.Title + "\n\n" +  item.Description);
                    session.endDialog();     
                 }
             },
+             function(session,results){
+                if(results.response.index == 0)
+                    session.replaceDialog("CollectInformation");//, { Property: results.response.entity }); 
+                else if(results.response.index == 1)
+                {
+                    session.send("welcomeText");
+                    var UserTypes = program.Helpers.GetOptions(program.Options.UserType,session.preferredLocale());
+                    builder.Prompts.choice(session, "getUserType", UserTypes,{listStyle: builder.ListStyle.button});
+                }
+                else if(results.response.index == 2)
+                    session.replaceDialog("PropertyOptions"); 
+                //   session.send(JSON.stringify(results));
+             }
         ]);
 
         /////////////////////////
@@ -675,7 +860,7 @@ var program = {
                 var txt = session.localizer.gettext("en","selectYourLanguage");
                 msg.attachments([
                 new builder.HeroCard(session)
-                    .title("Manateq")
+                    .title("UDC")
                     .text(txt)
                     .images([builder.CardImage.create(session, "http://www.udcqatar.com/images/logo.png")])
                     .buttons([
@@ -691,6 +876,39 @@ var program = {
                session.conversationData.lang = locale;
                session.preferredLocale(locale,function(err){
                    if(!err){
+                        // session.send("1");
+                    
+                    
+                    /*//call any function 
+                    dynamicsWebApi.executeUnboundFunction("WhoAmI").then(function (response) {
+                        session.send('Hello Dynamics 365! My id is: ' + response.UserId);
+                    }).catch(function(error){
+                        session.send(error.message);
+                    });
+                    var leadId = 'bc90202c-097d-e711-80ed-3863bb346b18';
+                    //perform a retrieve operaion 
+                    dynamicsWebApi.retrieve(leadId, "leads", ["fullname", "subject"]).then(function (record) {
+                        session.send(JSON.stringify(record));
+                        //do something with a record here 
+                    })
+                    .catch(function (error) {
+                        //catch an error 
+                    });*/
+                  
+                        /*dynamicsWebApi.retrieveAll("leads", ["emailaddress1","firstname" ], "statecode eq 0").then(function (response) {
+                            var records = response.value;
+                            for (var i = 0; i < records.length; i++) {
+                                var element = records[i];
+                                if (element.emailaddress1.toLowerCase() == "moatazattar@gmail.com") {
+                                    session.send("%s", element.firstname);
+                                    break;
+                                }
+                            }
+                        })
+                        .catch(function (error){
+                            session.send("");
+                        });*/
+
                         session.send("welcomeText");
                         var UserTypes = program.Helpers.GetOptions(program.Options.UserType,session.preferredLocale());
                         builder.Prompts.choice(session, "getUserType", UserTypes,{listStyle: builder.ListStyle.button});
@@ -701,19 +919,29 @@ var program = {
             },
             function (session,results) {
                 session.conversationData.userType = results.response.entity;
-                if(results.response.entity == "Current Resident")
-                    {
-                        session.conversationData.IsResident = true;
-                        session.send("whichService");
-                        session.beginDialog("Services");
-                    }
-                    else
-                    {
-                      session.replaceDialog("PropertyOptions"); 
-                        // session.send(JSON.stringify(results));
-                        //session.endDialog();
-                    }
-            }
+                if(results.response.index == 1)
+                {
+                    session.conversationData.IsResident = true;
+                    var AlreadyUserOptions = program.Helpers.GetOptions(program.Options.AlreadyUser,session.preferredLocale());
+                    builder.Prompts.choice(session, "areYouMemeber", AlreadyUserOptions,{listStyle: builder.ListStyle.button});
+                    // session.send("whichService");
+                    // session.replaceDialog("Services");
+                }
+                else
+                {
+                    session.replaceDialog("PropertyOptions"); 
+                }
+            },
+               function (session,results) {
+                session.beginDialog("getEmailCRM");
+            },
+            function (session,results) {
+                // session.send(JSON.stringify(results));
+                if(session.CRMResult)
+                    session.send("Hi Mr. "+ session.conversationData.firstName);
+                session.send("whichService");
+                session.replaceDialog("Services");
+            } 
         ])
     },
     Helpers: {
@@ -728,9 +956,9 @@ var program = {
             var subject = program.Constants.EmailTemplate.Subject[locale];
             html = html.replace("{{user}}",data.user);
             html = html.replace("{{mobile}}",data.mobile);
-            html = html.replace("{{zone}}",data.zone);
-            html = html.replace("{{sector}}",data.sector);
-            html = html.replace("{{operation}}",data.operation);
+            html = html.replace("{{property}}",data.property);
+            // html = html.replace("{{sector}}",data.sector);
+            // html = html.replace("{{operation}}",data.operation);
             html = html.replace("{{heard}}",data.heard);
             html = html.replace("{{comment}}",data.comment);
             var transporter = nodemailer.createTransport({
@@ -786,51 +1014,17 @@ bot.on('conversationUpdate', function (activity) {
 //     session.send("You saids: %s", session.message.text);
 
 // });
+var https = require('https');
+//set these values to retrieve the oauth token
 
-function getCardsAttachments(session) {
-    return [
-        new builder.HeroCard(session)
-            .title('Azure Storage')
-            .subtitle('Offload the heavy lifting of data center management')
-            .text('Store and help protect your data. Get durable, highly available data storage across the globe and pay only for what you use.')
-            .images([
-                builder.CardImage.create(session, 'https://docs.microsoft.com/en-us/azure/storage/media/storage-introduction/storage-concepts.png')
-            ])
-            .buttons([
-                builder.CardAction.openUrl(session, 'https://azure.microsoft.com/en-us/services/storage/', 'Learn More')
-            ]),
+ 
+ 
 
-        new builder.ThumbnailCard(session)
-            .title('DocumentDB')
-            .subtitle('Blazing fast, planet-scale NoSQL')
-            .text('NoSQL service for highly available, globally distributed apps—take full advantage of SQL and JavaScript over document and key-value data without the hassles of on-premises or virtual machine-based cloud database options.')
-            .images([
-                builder.CardImage.create(session, 'https://docs.microsoft.com/en-us/azure/documentdb/media/documentdb-introduction/json-database-resources1.png')
-            ])
-            .buttons([
-                builder.CardAction.openUrl(session, 'https://azure.microsoft.com/en-us/services/documentdb/', 'Learn More')
-            ]),
+ 
+   
 
-        new builder.HeroCard(session)
-            .title('Azure Functions')
-            .subtitle('Process events with a serverless code architecture')
-            .text('An event-based serverless compute experience to accelerate your development. It can scale based on demand and you pay only for the resources you consume.')
-            .images([
-                builder.CardImage.create(session, 'https://azurecomcdn.azureedge.net/cvt-5daae9212bb433ad0510fbfbff44121ac7c759adc284d7a43d60dbbf2358a07a/images/page/services/functions/01-develop.png')
-            ])
-            .buttons([
-                builder.CardAction.openUrl(session, 'https://azure.microsoft.com/en-us/services/functions/', 'Learn More')
-            ]),
 
-        new builder.ThumbnailCard(session)
-            .title('Cognitive Services')
-            .subtitle('Build powerful intelligence into your applications to enable natural and contextual interactions')
-            .text('Enable natural and contextual interaction with tools that augment users\' experiences using the power of machine-based intelligence. Tap into an ever-growing collection of powerful artificial intelligence algorithms for vision, speech, language, and knowledge.')
-            .images([
-                builder.CardImage.create(session, 'https://azurecomcdn.azureedge.net/cvt-68b530dac63f0ccae8466a2610289af04bdc67ee0bfbc2d5e526b8efd10af05a/images/page/services/cognitive-services/cognitive-services.png')
-            ])
-            .buttons([
-                builder.CardAction.openUrl(session, 'https://azure.microsoft.com/en-us/services/cognitive-services/', 'Learn More')
-            ])
-    ];
+function CallCRM() {
+
+
 }

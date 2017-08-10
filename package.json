@@ -17,7 +17,15 @@
   },
   "homepage": "https://github.com/moatazattar/UDC-Chatbot#readme",
   "dependencies": {
+    "adal-node": "^0.1.22",
     "botbuilder": "^3.9.0",
+    "dynamics-crm-rest": "^0.5.3",
+    "dynamics-crm-xrm": "^1.0.12",
+    "dynamics-web-api": "^1.2.9",
+    "dynamicscrm-api": "^1.0.0",
+    "dynamicsnode": "0.0.19",
+    "nodemailer": "^4.0.1",
+    "q": "^1.5.0",
     "restify": "^5.0.1"
   }
 }
