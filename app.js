@@ -482,7 +482,7 @@ var program = {
                 session.beginDialog("getname");    
             },
             function(session,results){ //get email
-                session.dialogData.name = session.conversationData.name;
+                session.dialogData.name = results.response;// session.conversationData.name;
                 session.beginDialog("getEmail");
             },
             function(session,results){ //get mobile
