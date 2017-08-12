@@ -63,13 +63,15 @@ var EnglishRecognizers = {
         EnSupportRecognizer : new builder.RegExpRecognizer( "EnSupport", /(^(?=.*(not working|fix|i want to fix|fix)))/i),
         EnGreetingsRecognizer : new builder.RegExpRecognizer( "EnGreetings", /(Hi|hello|good morning|good evening|good afternoon|)/i),
         // greetingRecognizer : new builder.RegExpRecognizer( "Greeting", /(السلام عليكم|صباح الخير|مساء الخير|مرحباً)/i),
-        // arabicRecognizer : new builder.RegExpRecognizer( "Arabic", /(العربية)/i), 
-        // englishRecognizer : new builder.RegExpRecognizer( "English", /(English)/i)
+        arabicRecognizer : new builder.RegExpRecognizer( "Arabic", /(العربية)/i), 
+        englishRecognizer : new builder.RegExpRecognizer( "English", /(English)/i)
     }
 
 var intents = new builder.IntentDialog({ recognizers: [
     EnglishRecognizers.EnSupportRecognizer,
     EnglishRecognizers.EnGreetingsRecognizer,
+    EnglishRecognizers.arabicRecognizer,
+    EnglishRecognizers.englishRecognizer,
     ] 
 })
 
@@ -92,6 +94,26 @@ var intents = new builder.IntentDialog({ recognizers: [
 })
 .matches('EnGreetings',(session, args) => {
      
+})
+.matches('English',(session, args) => {
+    session.conversationData.lang = "en";
+    session.preferredLocale(locale,function(err){
+        if(!err){
+            session.send("welcomeText");
+            var UserTypes = program.Helpers.GetOptions(program.Options.UserType,session.preferredLocale());
+            builder.Prompts.choice(session, "getUserType", UserTypes,{listStyle: builder.ListStyle.button});
+        };
+    })
+})
+.matches('Arabic',(session, args) => {
+    session.conversationData.lang = "ar";
+    session.preferredLocale(locale,function(err){
+        if(!err){
+            session.send("welcomeText");
+            var UserTypes = program.Helpers.GetOptions(program.Options.UserType,session.preferredLocale());
+            builder.Prompts.choice(session, "getUserType", UserTypes,{listStyle: builder.ListStyle.button});
+        };
+    })
 })
 .matches('None',(session, args) => {
     session.send("cannotUnderstand");
@@ -888,39 +910,6 @@ var program = {
                session.conversationData.lang = locale;
                session.preferredLocale(locale,function(err){
                    if(!err){
-                        // session.send("1");
-                    
-                    
-                    /*//call any function 
-                    dynamicsWebApi.executeUnboundFunction("WhoAmI").then(function (response) {
-                        session.send('Hello Dynamics 365! My id is: ' + response.UserId);
-                    }).catch(function(error){
-                        session.send(error.message);
-                    });
-                    var leadId = 'bc90202c-097d-e711-80ed-3863bb346b18';
-                    //perform a retrieve operaion 
-                    dynamicsWebApi.retrieve(leadId, "leads", ["fullname", "subject"]).then(function (record) {
-                        session.send(JSON.stringify(record));
-                        //do something with a record here 
-                    })
-                    .catch(function (error) {
-                        //catch an error 
-                    });*/
-                  
-                        /*dynamicsWebApi.retrieveAll("leads", ["emailaddress1","firstname" ], "statecode eq 0").then(function (response) {
-                            var records = response.value;
-                            for (var i = 0; i < records.length; i++) {
-                                var element = records[i];
-                                if (element.emailaddress1.toLowerCase() == "moatazattar@gmail.com") {
-                                    session.send("%s", element.firstname);
-                                    break;
-                                }
-                            }
-                        })
-                        .catch(function (error){
-                            session.send("");
-                        });*/
-
                         session.send("welcomeText");
                         var UserTypes = program.Helpers.GetOptions(program.Options.UserType,session.preferredLocale());
                         builder.Prompts.choice(session, "getUserType", UserTypes,{listStyle: builder.ListStyle.button});
@@ -1026,17 +1015,3 @@ bot.on('conversationUpdate', function (activity) {
 //     session.send("You saids: %s", session.message.text);
 
 // });
-var https = require('https');
-//set these values to retrieve the oauth token
-
- 
- 
-
- 
-   
-
-
-function CallCRM() {
-
-
-}
