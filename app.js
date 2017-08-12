@@ -64,6 +64,7 @@ var bot = new builder.UniversalBot(connector,{
 var EnglishRecognizers = {
         EnSupportRecognizer : new builder.RegExpRecognizer( "EnSupport", /(^(?=.*(not working|fix|i want to fix|fix)))/i),
         EnGreetingsRecognizer : new builder.RegExpRecognizer( "EnGreetings", /(Hi|hello|good morning|good evening|good afternoon|)/i),
+        MainMenuRecognizer : new builder.RegExpRecognizer( "MainMenu",/(^(?=.*(main menu|back to main menu|)))/i),
         // greetingRecognizer : new builder.RegExpRecognizer( "Greeting", /(السلام عليكم|صباح الخير|مساء الخير|مرحباً)/i),
         arabicRecognizer : new builder.RegExpRecognizer( "Arabic", /(العربية)/i), 
         englishRecognizer : new builder.RegExpRecognizer( "English", /(English)/i)
@@ -79,6 +80,7 @@ var intents = new builder.IntentDialog({ recognizers: [
     EnglishRecognizers.EnGreetingsRecognizer,
     EnglishRecognizers.arabicRecognizer,
     EnglishRecognizers.englishRecognizer,
+    EnglishRecognizers.MainMenuRecognizer,
     ] 
 })
 
@@ -99,17 +101,24 @@ var intents = new builder.IntentDialog({ recognizers: [
         session.endDialog();
     }
 })
+
+.matches('MainMenu',(session, args) => {
+    session.send("welcomeTextinmiddle");
+    session.beginDialog("userTypeSelection");  
+})
 .matches('EnGreetings',(session, args) => {
-     
+    session.send("welcomeTextinmiddle");
+    session.beginDialog("userTypeSelection"); 
 })
 .matches('qna',[
     function (session, args, next) {
         // session.send('Q and A');
         var answerEntity = builder.EntityRecognizer.findEntity(args.entities, 'answer');
         session.send(answerEntity.entity);
+        session.endDialog();
         
-        var AnyOtherThingList = program.Helpers.GetOptions(program.Options.AnyOtherThing,session.preferredLocale());
-        builder.Prompts.choice(session, "getServices", AnyOtherThingList,{listStyle: builder.ListStyle.button});
+        // var AnyOtherThingList = program.Helpers.GetOptions(program.Options.AnyOtherThing,session.preferredLocale());
+        // builder.Prompts.choice(session, "getServices", AnyOtherThingList,{listStyle: builder.ListStyle.button});
             
         /*if(session.conversationData.occurance != null){
             session.conversationData.occurance++;
@@ -655,7 +664,7 @@ var program = {
                     //session.send("Item Not Added");
                 })
                 session.endDialog();
-                
+
                 session.send("welcomeTextinmiddle");
                 session.replaceDialog("userTypeSelection");
             }
