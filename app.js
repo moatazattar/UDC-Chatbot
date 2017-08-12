@@ -102,8 +102,7 @@ var intents = new builder.IntentDialog({ recognizers: [
     session.preferredLocale(locale,function(err){
         if(!err){
             session.send("welcomeText");
-            var UserTypes = program.Helpers.GetOptions(program.Options.UserType,session.preferredLocale());
-            builder.Prompts.choice(session, "getUserType", UserTypes,{listStyle: builder.ListStyle.button});
+            session.replaceDialog("userTypeSelection");
         };
     })
 })
@@ -114,8 +113,7 @@ var intents = new builder.IntentDialog({ recognizers: [
     session.preferredLocale(locale,function(err){
         if(!err){
             session.send("welcomeText");
-            var UserTypes = program.Helpers.GetOptions(program.Options.UserType,session.preferredLocale());
-            builder.Prompts.choice(session, "getUserType", UserTypes,{listStyle: builder.ListStyle.button});
+            session.replaceDialog("userTypeSelection");
         };
     })
 })
@@ -484,6 +482,35 @@ var program = {
                     session.endDialog();
                 }
             }
+        ]);
+        bot.dialog("userTypeSelection",[
+            function(session,results){
+                 var UserTypes = program.Helpers.GetOptions(program.Options.UserType,session.preferredLocale());
+                 builder.Prompts.choice(session, "getUserType", UserTypes,{listStyle: builder.ListStyle.button});
+            },
+            function(session,results){
+               session.conversationData.userType = results.response.entity;
+                if(results.response.index == 1)
+                {
+                    session.conversationData.IsResident = true;
+                    var AlreadyUserOptions = program.Helpers.GetOptions(program.Options.AlreadyUser,session.preferredLocale());
+                    builder.Prompts.choice(session, "areYouMemeber", AlreadyUserOptions,{listStyle: builder.ListStyle.button});
+                }
+                else
+                {
+                    session.replaceDialog("PropertyOptions"); 
+                }
+            },
+               function (session,results) {
+                session.beginDialog("getEmailCRM");
+            },
+            function (session,results) {
+                // session.send(JSON.stringify(results));
+                if(session.CRMResult)
+                    session.send("Hi Mr. "+ session.conversationData.firstName);
+                session.send("whichService");
+                session.replaceDialog("Services");
+            } 
         ]);
         bot.dialog("welcome",[
             function(session,results){
