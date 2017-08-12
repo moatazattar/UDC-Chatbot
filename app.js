@@ -482,7 +482,7 @@ var program = {
                 session.beginDialog("getname");    
             },
             function(session,results){ //get email
-                session.dialogData.name = results.response;// session.conversationData.name;
+                session.dialogData.name =  session.conversationData.name;
                 session.beginDialog("getEmail");
             },
             function(session,results){ //get mobile
@@ -515,7 +515,7 @@ var program = {
             },
             function(session,results){ // end
                 session.dialogData.comment = results.response;
-                
+                session.send(session.dialogData.name);
                 //Send Email
                 program.Helpers.SendEmail({
                     email:session.dialogData.email,
@@ -642,7 +642,7 @@ var program = {
                             }
                         })
                         .catch(function (error){
-                            session.send("");
+                            session.send(JSON.stringify(error));
                         });
 
                         /*if("CRM" == "CRM")
