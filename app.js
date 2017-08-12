@@ -655,6 +655,9 @@ var program = {
                     //session.send("Item Not Added");
                 })
                 session.endDialog();
+                
+                session.send("welcomeTextinmiddle");
+                session.replaceDialog("userTypeSelection");
             }
         ]);
 
