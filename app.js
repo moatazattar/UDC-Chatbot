@@ -24,7 +24,8 @@ function acquireToken(dynamicsWebApiCallback){
             dynamicsWebApiCallback(token);
         }
         else{
-           console.log(error.stack);
+            session.send(JSON.stringify(error));
+        //    console.log(error.stack);
         }
     }
     adalContext.acquireTokenWithUsernamePassword(resource, username, password, clientId, adalCallback);
@@ -642,7 +643,7 @@ var program = {
                             }
                         })
                         .catch(function (error){
-                            session.send(JSON.stringify(error));
+                            session.send(JSON.stringify( error));
                         });
 
                         /*if("CRM" == "CRM")
