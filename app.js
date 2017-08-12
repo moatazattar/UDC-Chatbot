@@ -96,6 +96,8 @@ var intents = new builder.IntentDialog({ recognizers: [
      
 })
 .matches('English',(session, args) => {
+    session.send('English');
+    var locale ="en";
     session.conversationData.lang = "en";
     session.preferredLocale(locale,function(err){
         if(!err){
@@ -106,7 +108,9 @@ var intents = new builder.IntentDialog({ recognizers: [
     })
 })
 .matches('Arabic',(session, args) => {
-    session.conversationData.lang = "ar";
+    session.send('Arabic');
+    var locale ="ar";
+    session.conversationData.lang = locale;
     session.preferredLocale(locale,function(err){
         if(!err){
             session.send("welcomeText");
@@ -910,6 +914,39 @@ var program = {
                session.conversationData.lang = locale;
                session.preferredLocale(locale,function(err){
                    if(!err){
+                        // session.send("1");
+                    
+                    
+                    /*//call any function 
+                    dynamicsWebApi.executeUnboundFunction("WhoAmI").then(function (response) {
+                        session.send('Hello Dynamics 365! My id is: ' + response.UserId);
+                    }).catch(function(error){
+                        session.send(error.message);
+                    });
+                    var leadId = 'bc90202c-097d-e711-80ed-3863bb346b18';
+                    //perform a retrieve operaion 
+                    dynamicsWebApi.retrieve(leadId, "leads", ["fullname", "subject"]).then(function (record) {
+                        session.send(JSON.stringify(record));
+                        //do something with a record here 
+                    })
+                    .catch(function (error) {
+                        //catch an error 
+                    });*/
+                  
+                        /*dynamicsWebApi.retrieveAll("leads", ["emailaddress1","firstname" ], "statecode eq 0").then(function (response) {
+                            var records = response.value;
+                            for (var i = 0; i < records.length; i++) {
+                                var element = records[i];
+                                if (element.emailaddress1.toLowerCase() == "moatazattar@gmail.com") {
+                                    session.send("%s", element.firstname);
+                                    break;
+                                }
+                            }
+                        })
+                        .catch(function (error){
+                            session.send("");
+                        });*/
+
                         session.send("welcomeText");
                         var UserTypes = program.Helpers.GetOptions(program.Options.UserType,session.preferredLocale());
                         builder.Prompts.choice(session, "getUserType", UserTypes,{listStyle: builder.ListStyle.button});
