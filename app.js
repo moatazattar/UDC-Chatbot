@@ -1,6 +1,7 @@
 var restify = require('restify');
 var builder = require('botbuilder');
 var https = require('https');
+var cognitiveservices = require('botbuilder-cognitiveservices');
 var nodemailer = require('nodemailer');
 var DynamicsWebApi = require('dynamics-web-api');
 var AuthenticationContext = require('adal-node').AuthenticationContext;
@@ -59,6 +60,7 @@ var bot = new builder.UniversalBot(connector,{
 
  */
 
+
 var EnglishRecognizers = {
         EnSupportRecognizer : new builder.RegExpRecognizer( "EnSupport", /(^(?=.*(not working|fix|i want to fix|fix)))/i),
         EnGreetingsRecognizer : new builder.RegExpRecognizer( "EnGreetings", /(Hi|hello|good morning|good evening|good afternoon|)/i),
@@ -67,7 +69,12 @@ var EnglishRecognizers = {
         englishRecognizer : new builder.RegExpRecognizer( "English", /(English)/i)
     }
 
+var QnaRecognizer = new cognitiveservices.QnAMakerRecognizer({
+knowledgeBaseId: "d5ee930b-f551-4afc-820f-117baa9810c9", 
+subscriptionKey: "f919a2df8db948dc9dc10bef53fe13ce"});
+
 var intents = new builder.IntentDialog({ recognizers: [
+    QnaRecognizer,
     EnglishRecognizers.EnSupportRecognizer,
     EnglishRecognizers.EnGreetingsRecognizer,
     EnglishRecognizers.arabicRecognizer,
@@ -95,8 +102,40 @@ var intents = new builder.IntentDialog({ recognizers: [
 .matches('EnGreetings',(session, args) => {
      
 })
+.matches('qna',[
+    function (session, args, next) {
+        // session.send('Q and A');
+        var answerEntity = builder.EntityRecognizer.findEntity(args.entities, 'answer');
+        session.send(answerEntity.entity);
+        
+        var AnyOtherThingList = program.Helpers.GetOptions(program.Options.AnyOtherThing,session.preferredLocale());
+        builder.Prompts.choice(session, "getServices", AnyOtherThingList,{listStyle: builder.ListStyle.button});
+            
+        /*if(session.conversationData.occurance != null){
+            session.conversationData.occurance++;
+        }
+        else{
+            session.conversationData.occurance=0;
+        }
+        if(session.conversationData.occurance >= program.Constants.questionsBeforeInvest && !session.conversationData.applicationSubmitted){
+            session.replaceDialog("wantToInvest");
+        }else{
+            session.endDialog();
+        }*/
+        
+    },
+    function(session,results){
+        if(results.response.index == 0)
+        {
+            session.send("How can i help");
+            session.endDialog();
+        }
+        else if(results.response.index == 1)
+            session.replaceDialog("userTypeSelection");
+    }
+])
 .matches('English',(session, args) => {
-    session.send('English');
+    // session.send('English');
     var locale ="en";
     session.conversationData.lang = "en";
     session.preferredLocale(locale,function(err){
@@ -107,7 +146,7 @@ var intents = new builder.IntentDialog({ recognizers: [
     })
 })
 .matches('Arabic',(session, args) => {
-    session.send('Arabic');
+    // session.send('Arabic');
     var locale ="ar";
     session.conversationData.lang = locale;
     session.preferredLocale(locale,function(err){
@@ -127,8 +166,8 @@ var program = {
         questionBeforeGenericHelp : 3,
         EmailTemplate : {
             Content:{
-                en:"Dear {{user}} <br/> Thanks alot for your interest in UDC, our team will study your inquiry and will get back to you as soon as possible <br/><table border=1><tr><td>Mobile</td><td>{{mobile}}</td></tr><tr><td>property</td><td>{{property}}</td></tr><tr><td>Heard</td><td>{{heard}}</td></tr><tr><td>Comment</td><td>{{comment}}</td></tr></table><br/>Regards,<br/>UDC Team",
-                ar:"<div style='direction:rtl'> عزيزي {{user}} <br/> شكراً على اهتمامك بعقارات الشركه المتحده، سوف نقوم بدراسة طلبك والرد عليك بأقرب فرصة ممكنة <br/><br/><table border=1><tr><td>رقم جوالك</td><td>{{mobile}}</td></tr><tr><td>اهتماماتك</td><td>{{property}}</td></tr><tr><td>كيف سمعت عن شركة مناطق؟</td><td>{{heard}}</td></tr><tr><td>الاستعلام عنه</td><td>{{comment}}</td></tr></table><br/> مع تحيات فريق عمل الشركه المتحده</div>"
+                en:"Dear {{user}} <br/> Thanks alot for your interest in UDC, our team will study your inquiry and will get back to you as soon as possible <br/><table border=1><tr><td>Mobile</td><td>{{mobile}}</td></tr><tr><td>property</td><td>{{property}}</td></tr><tr><td>Comment</td><td>{{comment}}</td></tr></table><br/>Regards,<br/>UDC Team",
+                ar:"<div style='direction:rtl'> عزيزي {{user}} <br/> شكراً على اهتمامك بعقارات الشركه المتحده، سوف نقوم بدراسة طلبك والرد عليك بأقرب فرصة ممكنة <br/><br/><table border=1><tr><td>رقم جوالك</td><td>{{mobile}}</td></tr><tr><td>اهتماماتك</td><td>{{property}}</td></tr><tr><td>الاستعلام عنه</td><td>{{comment}}</td></tr></table><br/> مع تحيات فريق عمل الشركه المتحده</div>"
             },
             Subject:{
                 en:"Thanks from UDC",
@@ -200,11 +239,21 @@ var program = {
         UserType:{
             en:{
                 "Looking For Property":{Description:"Looking For Property"},
-                "Current Resident":{Description:"Current Resident"}
+                "Resident Services":{Description:"Resident Services"}
             },
             ar:{
                 "تبحث عن عقار / منزل":{Description:"تبحث عن عقار / منزل"},
                 "ساكن":{Description:"ساكن"}
+            }
+        },
+        AnyOtherThing:{
+            en:{
+                "Yes":{Description:"Yes"},
+                "No, Back to main":{Description:"No, Back to main"}
+            },
+            ar:{
+                "نعم":{Description:"نعم"},
+                "لا, الرجوع للقايمه الريئسيه":{Description:"لا, الرجوع للقايمه الريئسيه"}
             }
         },
         AlreadyUser:{
@@ -219,7 +268,7 @@ var program = {
         },
         PropertyInterest:{
             en:{
-               "Yes":{Description:"Yes"},
+               "Yes I am interested":{Description:"Yes"},
                 "No":{Description:"No"},
                 "Show All":{Description:"Show All"}
             },
@@ -492,9 +541,16 @@ var program = {
                session.conversationData.userType = results.response.entity;
                 if(results.response.index == 1)
                 {
-                    session.conversationData.IsResident = true;
-                    var AlreadyUserOptions = program.Helpers.GetOptions(program.Options.AlreadyUser,session.preferredLocale());
-                    builder.Prompts.choice(session, "areYouMemeber", AlreadyUserOptions,{listStyle: builder.ListStyle.button});
+                    // session.send("%s",session.conversationData.IsResident);
+                    if (session.conversationData.IsResident) {
+                        session.send("whichService");
+                        session.endDialog();
+                    }
+                    else
+                    {
+                        var AlreadyUserOptions = program.Helpers.GetOptions(program.Options.AlreadyUser,session.preferredLocale());
+                        builder.Prompts.choice(session, "areYouMemeber", AlreadyUserOptions,{listStyle: builder.ListStyle.button});
+                    }
                 }
                 else
                 {
@@ -502,14 +558,19 @@ var program = {
                 }
             },
                function (session,results) {
-                session.beginDialog("getEmailCRM");
+                   if (results.response.index == 0) {
+                    session.beginDialog("getEmailCRM",{ reprompt: false, IsResident : true });
+                   }
+                   else
+                    session.beginDialog("getEmailCRM",{ reprompt: false, IsResident : false });
             },
             function (session,results) {
                 // session.send(JSON.stringify(results));
                 if(session.CRMResult)
                     session.send("Hi Mr. "+ session.conversationData.firstName);
                 session.send("whichService");
-                session.replaceDialog("Services");
+                session.endDialog();
+                // session.replaceDialog("Services");
             } 
         ]);
         bot.dialog("welcome",[
@@ -532,7 +593,7 @@ var program = {
             function(session,args){
                 // session.send(JSON.stringify(args));
                 // session.dialogData.property = args;
-                session.send('%s',session.conversationData.InterestedProperty)
+                // session.send('%s',session.conversationData.InterestedProperty)
                 session.beginDialog("getname");    
             },
             function(session,results){ //get email
@@ -561,10 +622,6 @@ var program = {
             // },
             function(session,results){ //get how you heard about us
                 session.dialogData.mobile = results.response;
-                builder.Prompts.text(session, "getHowYouHeard");
-            },
-            function(session,results){ //get comment
-                session.dialogData.heard = results.response;
                 builder.Prompts.text(session, "addComment");
             },
             function(session,results){ // end
@@ -578,7 +635,7 @@ var program = {
                     property:session.conversationData.InterestedProperty,
                     // sector:session.dialogData.sector,
                     // operation:session.dialogData.operation,
-                    heard:session.dialogData.heard,
+                    // heard:session.dialogData.heard,
                     comment:session.dialogData.comment
                 },session.preferredLocale());
                 session.send("thanksInquiry",session.dialogData.email);
@@ -663,9 +720,14 @@ var program = {
         bot.dialog("getEmailCRM",[
             function(session,args){
                 if (args && args.reprompt) {
-                    builder.Prompts.text(session, "validEmail");
+                        builder.Prompts.text(session, "validEmail");
                 } else {
-                builder.Prompts.text(session, "enterEmail");
+                    if (args.IsResident)
+                        builder.Prompts.text(session, "enterEmailCRM");
+                    else if(!args.IsResident)
+                        builder.Prompts.text(session, "enterEmailNoCRM");
+                    else
+                        builder.Prompts.text(session, "enterEmail");
                 }
             },
             function(session,results)
@@ -683,6 +745,7 @@ var program = {
                                     var element = records[i];
                                     if (element.emailaddress1 != null && element.emailaddress1.toLowerCase() == results.response.toLowerCase()) {
                                         session.CRMResult = true;
+                                        session.conversationData.IsResident = true;
                                         session.conversationData.firstName = element.firstname;
                                         break;
                                     }
@@ -740,11 +803,10 @@ var program = {
                             };
                             //call dynamicsWebApi.create function 
                             dynamicsWebApi.create(lead, "leads").then(function (id) {
-                                session.send("Item Added");
+                                //session.send("Item Added");
                             }).catch(function (error) {
                                 session.send("Item Not Added");
                             })
-
                         session.endDialogWithResult(results);
                     }
                     else
@@ -906,9 +968,8 @@ var program = {
                     session.replaceDialog("CollectInformation");//, { Property: results.response.entity }); 
                 else if(results.response.index == 1)
                 {
-                    session.send("welcomeText");
-                    var UserTypes = program.Helpers.GetOptions(program.Options.UserType,session.preferredLocale());
-                    builder.Prompts.choice(session, "getUserType", UserTypes,{listStyle: builder.ListStyle.button});
+                    session.send("welcomeTextinmiddle");
+                    session.replaceDialog("userTypeSelection");
                 }
                 else if(results.response.index == 2)
                     session.replaceDialog("PropertyOptions"); 
@@ -941,43 +1002,9 @@ var program = {
                session.conversationData.lang = locale;
                session.preferredLocale(locale,function(err){
                    if(!err){
-                        // session.send("1");
-                    
-                    
-                    /*//call any function 
-                    dynamicsWebApi.executeUnboundFunction("WhoAmI").then(function (response) {
-                        session.send('Hello Dynamics 365! My id is: ' + response.UserId);
-                    }).catch(function(error){
-                        session.send(error.message);
-                    });
-                    var leadId = 'bc90202c-097d-e711-80ed-3863bb346b18';
-                    //perform a retrieve operaion 
-                    dynamicsWebApi.retrieve(leadId, "leads", ["fullname", "subject"]).then(function (record) {
-                        session.send(JSON.stringify(record));
-                        //do something with a record here 
-                    })
-                    .catch(function (error) {
-                        //catch an error 
-                    });*/
-                  
-                        /*dynamicsWebApi.retrieveAll("leads", ["emailaddress1","firstname" ], "statecode eq 0").then(function (response) {
-                            var records = response.value;
-                            for (var i = 0; i < records.length; i++) {
-                                var element = records[i];
-                                if (element.emailaddress1.toLowerCase() == "moatazattar@gmail.com") {
-                                    session.send("%s", element.firstname);
-                                    break;
-                                }
-                            }
-                        })
-                        .catch(function (error){
-                            session.send("");
-                        });*/
-
                         session.send("welcomeText");
                         var UserTypes = program.Helpers.GetOptions(program.Options.UserType,session.preferredLocale());
                         builder.Prompts.choice(session, "getUserType", UserTypes,{listStyle: builder.ListStyle.button});
-                    //   session.endDialog();
                    }
                }
             );  
@@ -986,9 +1013,16 @@ var program = {
                 session.conversationData.userType = results.response.entity;
                 if(results.response.index == 1)
                 {
-                    session.conversationData.IsResident = true;
-                    var AlreadyUserOptions = program.Helpers.GetOptions(program.Options.AlreadyUser,session.preferredLocale());
-                    builder.Prompts.choice(session, "areYouMemeber", AlreadyUserOptions,{listStyle: builder.ListStyle.button});
+                    // session.send("%s",session.conversationData.IsResident);
+                    if (session.conversationData.IsResident) {
+                        session.send("whichService");
+                        session.endDialog();
+                    }
+                    else
+                    {
+                        var AlreadyUserOptions = program.Helpers.GetOptions(program.Options.AlreadyUser,session.preferredLocale());
+                        builder.Prompts.choice(session, "areYouMemeber", AlreadyUserOptions,{listStyle: builder.ListStyle.button});
+                    }
                     // session.send("whichService");
                     // session.replaceDialog("Services");
                 }
@@ -998,14 +1032,19 @@ var program = {
                 }
             },
                function (session,results) {
-                session.beginDialog("getEmailCRM");
+                   if (results.response.index == 0) {
+                    session.beginDialog("getEmailCRM",{ reprompt: false, IsResident : true });
+                   }
+                   else
+                    session.beginDialog("getEmailCRM",{ reprompt: false, IsResident : false });
             },
             function (session,results) {
                 // session.send(JSON.stringify(results));
                 if(session.CRMResult)
                     session.send("Hi Mr. "+ session.conversationData.firstName);
                 session.send("whichService");
-                session.replaceDialog("Services");
+                session.endDialog();
+                // session.replaceDialog("Services");
             } 
         ])
     },
@@ -1024,7 +1063,7 @@ var program = {
             html = html.replace("{{property}}",data.property);
             // html = html.replace("{{sector}}",data.sector);
             // html = html.replace("{{operation}}",data.operation);
-            html = html.replace("{{heard}}",data.heard);
+            // html = html.replace("{{heard}}",data.heard);
             html = html.replace("{{comment}}",data.comment);
             var transporter = nodemailer.createTransport({
                 service: 'gmail',

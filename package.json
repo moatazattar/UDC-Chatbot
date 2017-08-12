@@ -19,6 +19,7 @@
   "dependencies": {
     "adal-node": "^0.1.22",
     "botbuilder": "^3.9.0",
+    "botbuilder-cognitiveservices": "^1.1.0",
     "dynamics-crm-rest": "^0.5.3",
     "dynamics-crm-xrm": "^1.0.12",
     "dynamics-web-api": "^1.2.9",
