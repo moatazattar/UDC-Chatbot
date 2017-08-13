@@ -54,6 +54,26 @@ var bot = new builder.UniversalBot(connector,{
     }   
 });
 
+
+// bot.use({
+//     botbuilder: function (session, next) {
+//         // session.send(JSON.stringify(session)); 
+//         // session.send("%s", JSON.stringify(session.sessionSate));;
+//         // if (session.privateConversationData.previousAccess) {
+
+//         //     //  session.send('Set time out');
+//         //       var delta = new Date().time() - session.privateConversationData.previousAccess;
+//         //      session.send(delta);
+            
+//         //       //   if (delta > 30000) {
+//         //     //        session.clearDialogStack();
+//         //     //   }
+//         //  }
+//         //  session.privateConversationData.previousAccess = session.sessionSate.lastAccess;
+//          next();
+//     }
+// });
+
 //Recognizers
 /**
  *session.conversationData.name
@@ -574,8 +594,9 @@ var program = {
                 {
                     // session.send("%s",session.conversationData.IsResident);
                     if (session.conversationData.IsResident) {
-                        session.send("whichService");
-                        session.endDialog();
+                        session.replaceDialog("Services");
+                        // session.send("whichService");
+                        // session.endDialog();
                     }
                     else
                     {
@@ -1059,8 +1080,9 @@ var program = {
                 {
                     // session.send("%s",session.conversationData.IsResident);
                     if (session.conversationData.IsResident) {
-                        session.send("whichService");
-                        session.endDialog();
+                        session.replaceDialog("Services");
+                        // session.send("whichService");
+                        // session.endDialog();
                     }
                     else
                     {

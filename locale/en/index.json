@@ -33,5 +33,5 @@
     "getUserType": "Please select an option:",
     "areYouInterestedinProperty":"Are you interested in this property",
     "areYouMemeber" : "Are you a current resident with us?",
-    "defaultIntent": "Sorry, I didnt understand that, here is the list of services i can assist you with: Maintenance, Laundry, Taxi and Cleaning"
+    "defaultIntent": "Sorry I couldn’t understand what you are saying, please rephrase your question and try using direct short questions"
 }
