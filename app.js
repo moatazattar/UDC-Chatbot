@@ -49,7 +49,6 @@ var connector = new builder.ChatConnector({
 server.post('/api/messages', connector.listen());
 
 var bot = new builder.UniversalBot(connector,{
-    
     localizerSettings: { 
         defaultLocale: "en" 
     }   
@@ -116,10 +115,10 @@ var intents = new builder.IntentDialog({ recognizers: [
 .matches('qna',[
     function (session, args, next) {
         // session.send('Q and A');
-        bot.use(builder.Middleware.sendTyping());
+        /*bot.use(builder.Middleware.sendTyping());
         setTimeout(function () {
             session.send("Hello there...");
-        }, 3000);
+        }, 3000);*/
         var answerEntity = builder.EntityRecognizer.findEntity(args.entities, 'answer');
         session.send(answerEntity.entity);
         session.endDialog();
@@ -398,9 +397,23 @@ var program = {
                         "The Pearl Towers": {
                             Cards : true,
                             Image: "http://www.udcqatar.com/ContentFiles/75Image.jpg",
-                            Title:"Qanat Quartier",
+                            Title:"The Pearl Towers",
                             Description:"Start Date: February 2013 Delivery Date: October 2016 Project Type: Commercial​​​​",
                             Pref: "Standing as the tallest architecture on the Pearl Island, the Pearl AQ-01 and AQ-02 towers are identical structures situated at the entrance of The Pearl-Qatar and developed primarily to accommodate high quality commercial office space, making it the location of choice for many discerning businesses. Within its cosmopolitan setting, The Pearl Towers' design language is fundamentally a modern-day interpretation of time-honored styles and themes, and each 42-storey tower offers amenities designed to provide the best possible working environment within first class facilities.As a high quality state-of-the-art commercial office development, the Pearl Towers are seen as a major step forward for the Island and a great enterprise aimed at clients looking for office space in an inspiring location. Standing at approximately 201 meters each on opposite sides, the two beacon-like office towers flank the main access road of the Pearl-Qatar, and serve as a defining feature to the whole Pearl development."
+                        },  
+                        "Porto Arabia Retail and Owned Towers": {
+                            Cards : true, 
+                            Image: "http://www.udcqatar.com/ContentFiles/70Image.jpg",
+                            Title:"Porto Arabia Retail and Owned Towers",
+                            Description:"Start Date: March 2006 Delivery Date: August 2010 Project Type: Retail,Residential​​​​",
+                            Pref: "Porto Arabia represents a modern Mediterranean dwelling in the heart of Arabia with an open air retail design. Catering to fashion as well as food & beverage, the colorful waterfront of Porto Arabia – known as La Croisette, is a lively 2.5 kilometer pedestrianized concourse lined with numerous globally recognized upscale retail stores and dining outlets. As the thriving cosmopolitan heart of the Pearl-Qatar, Porto Arabia captures the sophisticated essence of the Riviera, combining elegant towers and townhouses in a spectacular location.Conducive to the highest standards of living, various studios, 1 to 4 bedroom apartments and townhouses are offered with unit sizes ranging from 88 sqm. to 900 sqm. Porto Arabia is reminiscent of a continental harbor, yet positively alive with Arabian warmth and charm."
+                        },   
+                        "Medina Centrale Start": {
+                            Cards : true, 
+                            Image: "http://www.udcqatar.com/ContentFiles/69Image.jpg",
+                            Title:"Medina Centrale Start",
+                            Description:"Date: July 2007 Delivery Date: July 2013 Project Type: Retail,Residential​​​​",
+                            Pref: "Nestled between the residential, shopping and dining district of Porto Arabia and the relaxed, family-oriented beachfront community of Viva Bahriya, Medina Centrale has been conceived from the outset as the heart of The Pearl-Qatar. The entire Medina Centrale district forms a single, mixed-use property development comprising residential apartments, ample retail space and leisure experiences. With a charming ambience likened to that of the Mediterranean, Medina Centrale offers retail facilities in open-air promenades as well as indoor shopping facilities, parks, plazas, water features and centralized gathering place in the district’s Central Piazza, well suited to host public activities and community events.The demand to lease residential property in Medina Centrale is driven by the appeal of living in a central community characterized by low-rise buildings, abundant green space and the interesting variety of retail shops and services right at their doorstep.s"
                         }
                     }   
                 }
@@ -586,8 +599,10 @@ var program = {
                 // session.send(JSON.stringify(results));
                 if(session.CRMResult)
                     session.send("Hi Mr. "+ session.conversationData.firstName);
-                session.send("whichService");
-                session.endDialog();
+                session.replaceDialog("Services");
+
+                /*session.send("whichService");
+                session.endDialog();*/
                 // session.replaceDialog("Services");
             } 
         ]);
@@ -668,7 +683,7 @@ var program = {
                 };
                 //call dynamicsWebApi.create function 
                 dynamicsWebApi.create(lead, "leads").then(function (id) {
-                    session.send("Your data had been saved");
+                    // session.send("Your data had been saved");
                 }).catch(function (error) {
                     //session.send("Item Not Added");
                 })
@@ -918,7 +933,15 @@ var program = {
                 builder.Prompts.choice(session, "getServices", ServicesList,{listStyle: builder.ListStyle.button});
             },
             function(session,results){
-
+                if (results.response.index == 0) {
+                    session.send("whichService");
+                    session.endDialog();
+                }
+                else
+                {
+                    session.send("This section still under development");
+                    session.replaceDialog("Services");
+                }
             }
         ]);
         
@@ -1063,9 +1086,10 @@ var program = {
                 // session.send(JSON.stringify(results));
                 if(session.CRMResult)
                     session.send("Hi Mr. "+ session.conversationData.firstName);
-                session.send("whichService");
-                session.endDialog();
-                // session.replaceDialog("Services");
+                
+                session.replaceDialog("Services");
+
+
             } 
         ])
     },
@@ -1123,15 +1147,15 @@ var program = {
 program.Init();
 
 
-// bot.on('conversationUpdate', function (activity) {  
-//     if (activity.membersAdded) {
-//         activity.membersAdded.forEach((identity) => {
-//             if (identity.id === activity.address.bot.id) {
-//                    bot.beginDialog(activity.address, 'setLanguageWithPic');
-//              }
-//          });
-//     }
-//  });
+bot.on('conversationUpdate', function (activity) {  
+    if (activity.membersAdded) {
+        activity.membersAdded.forEach((identity) => {
+            if (identity.id === activity.address.bot.id) {
+                   bot.beginDialog(activity.address, 'setLanguageWithPic');
+             }
+         });
+    }
+ });
 
 
 // // Receive messages from the user and respond by echoing each message back (prefixed with 'You said:')
