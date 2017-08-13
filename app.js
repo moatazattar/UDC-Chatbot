@@ -48,31 +48,41 @@ var connector = new builder.ChatConnector({
 // Listen for messages from users 
 server.post('/api/messages', connector.listen());
 
-var bot = new builder.UniversalBot(connector,{
-    localizerSettings: { 
-        defaultLocale: "en" 
-    }   
+// var bot = new builder.UniversalBot(connector,{
+//     localizerSettings: { 
+//         defaultLocale: "en" 
+//     } 
+// });
+
+var bot = new builder.UniversalBot(connector, function (session) {
+    session.sendTyping();
+    setTimeout(function () {
+        session.send("Hello there...");
+    }, 3000);
 });
 
-
-// bot.use({
-//     botbuilder: function (session, next) {
-//         // session.send(JSON.stringify(session)); 
-//         // session.send("%s", JSON.stringify(session.sessionSate));;
-//         // if (session.privateConversationData.previousAccess) {
-
-//         //     //  session.send('Set time out');
-//         //       var delta = new Date().time() - session.privateConversationData.previousAccess;
-//         //      session.send(delta);
-            
-//         //       //   if (delta > 30000) {
-//         //     //        session.clearDialogStack();
-//         //     //   }
-//         //  }
-//         //  session.privateConversationData.previousAccess = session.sessionSate.lastAccess;
-//          next();
-//     }
-// });
+bot.use({
+    botbuilder: function (session, next) {
+        // var delta = new Date().getTime();
+        // session.send(JSON.stringify(delta)); 
+        // session.send("%s", JSON.stringify(session.sessionState));;
+        session.send('Set time out 1');
+        if (session.conversationData.previousAccess) {
+            session.send('Set time out 2');
+            // var delta = new Date().getTime() - session.conversationData.previousAccess;
+            // session.send(new Date().getTime() - session.conversationData.previousAccess);
+                if (new Date().getTime() - session.conversationData.previousAccess > 30000) {
+                session.send('Set time out 4');
+                session.clearDialogStack();
+            }
+         }
+         session.send('Set time out 3');
+         session.conversationData.previousAccess = session.sessionState.lastAccess;
+        //  session.send(session.privateConversationData.previousAccess);
+        //  session.send(session.sessionState.lastAccess);
+         next();
+    }
+});
 
 //Recognizers
 /**
@@ -546,7 +556,7 @@ var program = {
     },
     Init : function(){
         program.RegisterDialogs();
-        bot.dialog("/",intents);
+        // bot.dialog("/",intents);
     },
     IntentHelper:{
         url : "https://westus.api.cognitive.microsoft.com/luis/v2.0/apps/0cfcf9f6-0ad6-47c3-bd2a-094f979484db?subscription-key=13b10b366d2743cda4d800ff0fd10077&timezoneOffset=0&verbose=true&q=",
