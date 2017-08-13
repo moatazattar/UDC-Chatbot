@@ -51,6 +51,7 @@ server.post('/api/messages', connector.listen());
 var bot = new builder.UniversalBot(connector,{
     localizerSettings: { 
         defaultLocale: "en" 
+        
     } 
 });
 
