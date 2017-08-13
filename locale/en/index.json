@@ -32,5 +32,6 @@
     "getServices" : "Which service can i help you with:",
     "getUserType": "Please select an option:",
     "areYouInterestedinProperty":"Are you interested in this property",
-    "areYouMemeber" : "Are you a current resident with us?"
+    "areYouMemeber" : "Are you a current resident with us?",
+    "defaultIntent": "Sorry, I didnt understand that, here is the list of services i can assist you with: Maintenance, Laundry, Taxi and Cleaning"
 }

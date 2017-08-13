@@ -9,11 +9,11 @@
     "firstOnlyNamePlease" :"حسناً الرجاء إدخال اسمك الأول",
     "LastOnlyNamePlease" :"حسناً الرجاء إدخال اسمك العائله",
     "welcomeText" : "مرحباً، كيف يمكنني مساعدتك؟",
-    "welcomeTextinmiddle": "Is there anything else I can help you with today?",
+    "welcomeTextinmiddle": "هل يمكنني مساعدتك بأي شيئ أخر سيدي؟",
     "validMobile":"الرجاء أدخل رقم الجوال بشكل صحيح",
     "validEmail":" الرجاء إدخال بريدك إلكتروني بشكل صحيح [بشكل xxxxx@xxxxx.xxx]",
     "enterEmail" :"الرجاء إدخال بريدك إلكتروني ",
-    "enterEmailCRM":"Please enter the email you use to login to our Resident Portal",
+    "enterEmailCRM":"برجاء إدهال البريد الإلكتروني الذي قمت بإستخدامه في التسجيل من قبل",
     "askForEmail" : "مرحباً، الرجاء اطلعني على اسمك",
     "greetingAgain" : "مرحباً مرة أخرى %s، كيف يمكنني مساعدتك؟",
     "greetingAsk" : "مرحباً %s، كيف يمكنني مساعدتك؟",
@@ -31,6 +31,7 @@
     "getServices" : "اي من هذه الخدمات يكمنني مساعدتك",
     "getUserType": "برجاء الإختيار",
     "areYouInterestedinProperty":"هل انت مهتم بالإطلاع علي معلومات أكثر لهذه العقار",
-    "areYouMemeber" : "هل انت عضو مسجل"
+    "areYouMemeber" : "هل انت عضو مسجل",
+    "defaultIntent": "للأسف لم أفهم ذلك, هذه هي القائمه بالخمات التي يمكنني مسادتك بها: تنظيف الغرف, الصيانه, خدمات التوصيل, و تمظيف الملابس"
 
 }

@@ -43,10 +43,13 @@ var connector = new builder.ChatConnector({
     appPassword:"2KPruHcVZwzPveUwsGpeNqc"// process.env.MICROSOFT_APP_PASSWORD
 });
 
+
+
 // Listen for messages from users 
 server.post('/api/messages', connector.listen());
 
 var bot = new builder.UniversalBot(connector,{
+    
     localizerSettings: { 
         defaultLocale: "en" 
     }   
@@ -59,28 +62,28 @@ var bot = new builder.UniversalBot(connector,{
  session.conversationData.IsResident
 
  */
-
+var QnaRecognizer = new cognitiveservices.QnAMakerRecognizer({
+knowledgeBaseId: "d5ee930b-f551-4afc-820f-117baa9810c9", 
+subscriptionKey: "f919a2df8db948dc9dc10bef53fe13ce"});
 
 var EnglishRecognizers = {
         EnSupportRecognizer : new builder.RegExpRecognizer( "EnSupport", /(^(?=.*(not working|fix|i want to fix|fix)))/i),
-        EnGreetingsRecognizer : new builder.RegExpRecognizer( "EnGreetings", /(Hi|hello|good morning|good evening|good afternoon|)/i),
-        MainMenuRecognizer : new builder.RegExpRecognizer( "MainMenu",/(^(?=.*(main menu|back to main menu|)))/i),
+        EnGreetingsRecognizer : new builder.RegExpRecognizer( "EnGreetings",/^(hi|hello|good morning|good evening|good afternoon)/i),///(^(?=.*(hi|hello|good morning|good evening|good afternoon)))/i),// /(Hi|hello|good morning|good evening|good afternoon|)/i),
+        MainMenuRecognizer : new builder.RegExpRecognizer( "MainMenu",/^(main menu|back to main menu)/i),///(^(?=.*(main menu|back to main menu|)))/i),
         // greetingRecognizer : new builder.RegExpRecognizer( "Greeting", /(السلام عليكم|صباح الخير|مساء الخير|مرحباً)/i),
         arabicRecognizer : new builder.RegExpRecognizer( "Arabic", /(العربية)/i), 
         englishRecognizer : new builder.RegExpRecognizer( "English", /(English)/i)
     }
 
-var QnaRecognizer = new cognitiveservices.QnAMakerRecognizer({
-knowledgeBaseId: "d5ee930b-f551-4afc-820f-117baa9810c9", 
-subscriptionKey: "f919a2df8db948dc9dc10bef53fe13ce"});
+
 
 var intents = new builder.IntentDialog({ recognizers: [
     QnaRecognizer,
     EnglishRecognizers.EnSupportRecognizer,
     EnglishRecognizers.EnGreetingsRecognizer,
+    EnglishRecognizers.MainMenuRecognizer,
     EnglishRecognizers.arabicRecognizer,
     EnglishRecognizers.englishRecognizer,
-    EnglishRecognizers.MainMenuRecognizer,
     ] 
 })
 
@@ -113,6 +116,10 @@ var intents = new builder.IntentDialog({ recognizers: [
 .matches('qna',[
     function (session, args, next) {
         // session.send('Q and A');
+        bot.use(builder.Middleware.sendTyping());
+        setTimeout(function () {
+            session.send("Hello there...");
+        }, 3000);
         var answerEntity = builder.EntityRecognizer.findEntity(args.entities, 'answer');
         session.send(answerEntity.entity);
         session.endDialog();
@@ -165,10 +172,12 @@ var intents = new builder.IntentDialog({ recognizers: [
         };
     })
 })
-.matches('None',(session, args) => {
-    session.send("cannotUnderstand");
-})
-
+// .matches('None',(session, args) => {
+//     session.send("cannotUnderstand");
+// })
+.onDefault((session) => {
+    session.send('defaultIntent');
+});
 var program = {
     Constants:{
         questionsBeforeInvest : 5,
@@ -663,7 +672,7 @@ var program = {
                 }).catch(function (error) {
                     //session.send("Item Not Added");
                 })
-                session.endDialog();
+                // session.endDialog();
 
                 session.send("welcomeTextinmiddle");
                 session.replaceDialog("userTypeSelection");
@@ -1114,15 +1123,15 @@ var program = {
 program.Init();
 
 
-bot.on('conversationUpdate', function (activity) {  
-    if (activity.membersAdded) {
-        activity.membersAdded.forEach((identity) => {
-            if (identity.id === activity.address.bot.id) {
-                   bot.beginDialog(activity.address, 'setLanguageWithPic');
-             }
-         });
-    }
- });
+// bot.on('conversationUpdate', function (activity) {  
+//     if (activity.membersAdded) {
+//         activity.membersAdded.forEach((identity) => {
+//             if (identity.id === activity.address.bot.id) {
+//                    bot.beginDialog(activity.address, 'setLanguageWithPic');
+//              }
+//          });
+//     }
+//  });
 
 
 // // Receive messages from the user and respond by echoing each message back (prefixed with 'You said:')
